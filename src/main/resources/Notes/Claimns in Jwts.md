@@ -1,4 +1,4 @@
-````md
+
 # 🧾 JWT Claims Explained
 
 In JWT, a **claim** is a piece of information (a **key–value pair**) stored inside the **payload** of the token.
