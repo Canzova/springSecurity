@@ -1,5 +1,6 @@
 package com.codingshuttle.youtube.hospitalManagement.entity;
 
+import com.codingshuttle.youtube.hospitalManagement.entity.type.AuthProviderType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,10 @@ public class User implements UserDetails {
 
     private String password;
 
+    private String providerId;
+
+    @Enumerated(EnumType.STRING)
+    private AuthProviderType providerType;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

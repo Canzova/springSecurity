@@ -19,4 +19,5 @@ public class LoginResponseDTO {
     private Long id;
     private String username;
     private String jwt;
+
 }
