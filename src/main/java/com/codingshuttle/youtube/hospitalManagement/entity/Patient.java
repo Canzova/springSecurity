@@ -2,9 +2,7 @@ package com.codingshuttle.youtube.hospitalManagement.entity;
 
 import com.codingshuttle.youtube.hospitalManagement.entity.type.BloodGroupType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDate;
@@ -16,16 +14,26 @@ import java.util.List;
 @ToString
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+
 @Table(
         name = "patient",
         uniqueConstraints = {
-//                @UniqueConstraint(name = "unique_patient_email", columnNames = {"email"}),
-                @UniqueConstraint(name = "unique_patient_name_birthdate", columnNames = {"name", "birthDate"})
+                @UniqueConstraint(
+                        name = "unique_patient_name_birthdate",
+                        columnNames = {"name", "birth_date"}
+                )
         },
         indexes = {
-                @Index(name = "idx_patient_birth_date", columnList = "birthDate")
+                @Index(
+                        name = "idx_patient_birth_date",
+                        columnList = "birth_date"
+                )
         }
 )
+
 public class Patient {
 
     @Id
@@ -49,6 +57,13 @@ public class Patient {
 
     @Enumerated(EnumType.STRING)
     private BloodGroupType bloodGroup;
+
+    // MapsId says that, the current entity will use the primary key of user.
+    // We use this when we know that Patient will not exist without user. and they both should have same id
+    // User is parent here and Patient is child
+    @MapsId
+    @OneToOne
+    private User user;
 
     @OneToOne(cascade = {CascadeType.ALL}, orphanRemoval = true)
     @JoinColumn(name = "patient_insurance_id") // owning side

@@ -36,6 +36,7 @@ public class WebSecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth->
                     auth.requestMatchers("/public/**", "/auth/**").permitAll()
+                            .requestMatchers("/h2-console/**").permitAll()
                             .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -47,6 +48,9 @@ public class WebSecurityConfig {
 
 
 //                .formLogin(Customizer.withDefaults());
+        httpSecurity.headers(header->header.frameOptions(
+                frameOptions -> frameOptions.sameOrigin()
+        ));
 
         return httpSecurity.build();
     }

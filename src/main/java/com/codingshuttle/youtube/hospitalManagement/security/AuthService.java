@@ -2,10 +2,15 @@ package com.codingshuttle.youtube.hospitalManagement.security;
 
 import com.codingshuttle.youtube.hospitalManagement.dto.LoginRequestDTO;
 import com.codingshuttle.youtube.hospitalManagement.dto.LoginResponseDTO;
+import com.codingshuttle.youtube.hospitalManagement.dto.SignUpRequestDTO;
 import com.codingshuttle.youtube.hospitalManagement.dto.SignUpResponseDTO;
+import com.codingshuttle.youtube.hospitalManagement.entity.Patient;
 import com.codingshuttle.youtube.hospitalManagement.entity.User;
 import com.codingshuttle.youtube.hospitalManagement.entity.type.AuthProviderType;
+import com.codingshuttle.youtube.hospitalManagement.entity.type.RoleType;
+import com.codingshuttle.youtube.hospitalManagement.repository.PatientRepository;
 import com.codingshuttle.youtube.hospitalManagement.repository.UserRepository;
+import com.codingshuttle.youtube.hospitalManagement.service.PatientService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Set;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -26,6 +33,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final PasswordEncoder passwordEncoder;
+    private final PatientRepository patientRepository;
 
     public LoginResponseDTO loginRequest(LoginRequestDTO loginRequestDTO) {
         Authentication authentication = authenticationManager.authenticate(
@@ -40,7 +48,7 @@ public class AuthService {
     }
 
     // Here you need to create a user and save it into Db and return the saved user
-    public SignUpResponseDTO signUpRequest(LoginRequestDTO signUpRequestDTO) {
+    public SignUpResponseDTO signUpRequest(SignUpRequestDTO signUpRequestDTO) {
         // Step 1 : Convert the DTO to entity type
         User savedUser = signInInternal(signUpRequestDTO, null, AuthProviderType.EMAIL);
 
@@ -48,7 +56,7 @@ public class AuthService {
         return modelMapper.map(savedUser, SignUpResponseDTO.class);
     }
 
-    User signInInternal(LoginRequestDTO signUpRequestDTO, String providerId, AuthProviderType authProviderType){
+    User signInInternal(SignUpRequestDTO signUpRequestDTO, String providerId, AuthProviderType authProviderType){
         User user = modelMapper.map(signUpRequestDTO, User.class);
 
         // What if this user already exits
@@ -61,10 +69,20 @@ public class AuthService {
         user.setProviderId(providerId);
         user.setProviderType(authProviderType);
 
+        //user.setRoles(Set.of(RoleType.PATIENT));
+
+        user = userRepository.save(user);
+
+        Patient patient = Patient.builder()
+                .name(signUpRequestDTO.getName())
+                .email(signUpRequestDTO.getUsername())
+                .user(user)
+                .build();
+
+        patientRepository.save(patient);
 
         // Step 2 : Now you can save this into db
-
-        return userRepository.save(user);
+        return user;
     }
 
     public ResponseEntity<LoginResponseDTO> handleOAuth2LoginRequest(OAuth2User oAuth2User, String registrationId) {
@@ -86,6 +104,7 @@ public class AuthService {
         // Step 4 : Try to get the mail id from the auth2 provider, if it provides the mail id
         // SOme providers does not give the email
         String email = oAuth2User.getAttribute("email");
+        String name = oAuth2User.getAttribute("name");
 
         // Step 5 : Get the user from this email from db
         /*
@@ -110,8 +129,9 @@ public class AuthService {
              */
 
             String username = authUtil.determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId);
+
             // This is a new user----> DO sign in
-            user = signInInternal(new LoginRequestDTO(username, null), providerId, providerType);
+            user = signInInternal(new SignUpRequestDTO(name, username, null, Set.of(RoleType.PATIENT)), providerId, providerType);
         }
         else if(user != null){
             /*
