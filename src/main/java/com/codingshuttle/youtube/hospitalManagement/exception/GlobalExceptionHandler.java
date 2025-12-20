@@ -36,6 +36,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(APIException, HttpStatus.FORBIDDEN);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<APIException> handleIllegalArgumentException(IllegalArgumentException ex) {
+        APIException APIException = new APIException(ex.getMessage(), HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(APIException, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<APIException> handleGenericException(Exception ex) {
         APIException APIException = new APIException("An unexpected error occurred: " + ex.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);

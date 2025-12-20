@@ -69,7 +69,8 @@ public class AuthService {
         user.setProviderId(providerId);
         user.setProviderType(authProviderType);
 
-        //user.setRoles(Set.of(RoleType.PATIENT));
+        // Every user will be Patient bydefault
+        user.setRoles(Set.of(RoleType.PATIENT));
 
         user = userRepository.save(user);
 
@@ -131,7 +132,7 @@ public class AuthService {
             String username = authUtil.determineUsernameFromOAuth2User(oAuth2User, registrationId, providerId);
 
             // This is a new user----> DO sign in
-            user = signInInternal(new SignUpRequestDTO(name, username, null, Set.of(RoleType.PATIENT)), providerId, providerType);
+            user = signInInternal(new SignUpRequestDTO(name, username, null), providerId, providerType);
         }
         else if(user != null){
             /*
