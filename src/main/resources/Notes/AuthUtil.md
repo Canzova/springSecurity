@@ -1,4 +1,4 @@
-````md
+
 # Understanding JJWT Methods (`builder`, `parser`, `verifyWith`, `parseSignedClaims`)
 
 You’re seeing **methods that come from the JJWT (`io.jsonwebtoken`) library**, and they follow a very common design pattern called the **Builder Pattern**.  
